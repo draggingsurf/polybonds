@@ -10,7 +10,6 @@ import {
   BOND_CATEGORIES,
   computeAggregates,
   filterBonds,
-  formatReturnPct,
   sortBonds,
   type Bond,
   type BondsPayload,
@@ -129,13 +128,6 @@ export function PolyBondsApp({ initial }: { initial: BondsPayload }) {
 
   const aggregates = useMemo(() => computeAggregates(filtered), [filtered]);
 
-  function shareOnX() {
-    const url = typeof window !== "undefined" ? window.location.href : "";
-    const text = `${aggregates.count} Polymarket bonds paying out before Dec 31. Avg return ${formatReturnPct(aggregates.avgReturn)}.`;
-    const intent = `https://x.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
-    window.open(intent, "_blank", "noopener,noreferrer");
-  }
-
   const showError = Boolean(initial.error) && initial.bonds.length === 0;
 
   return (
@@ -180,16 +172,6 @@ export function PolyBondsApp({ initial }: { initial: BondsPayload }) {
               visibleCount={visibleCount}
               onShowMore={() => setVisibleCount((c) => c + BOND_PAGE_SIZE)}
             />
-
-            <div className="flex justify-start py-6">
-              <button
-                type="button"
-                onClick={shareOnX}
-                className="text-[13px] text-muted hover:text-ink"
-              >
-                Share on X
-              </button>
-            </div>
           </main>
         </>
       )}
