@@ -11,8 +11,17 @@ export const alt = "PolyBonds — near-certain Polymarket predictions ending thi
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
+const ALUMNI_SANS_BOLD =
+  "https://cdn.jsdelivr.net/fontsource/fonts/alumni-sans@5.2.5/latin-700-normal.ttf";
+
 export default async function OpenGraphImage() {
-  const payload = await fetchBonds();
+  const [payload, alumniSans] = await Promise.all([
+    fetchBonds(),
+    fetch(ALUMNI_SANS_BOLD).then((res) => {
+      if (!res.ok) throw new Error(`Failed to load Alumni Sans (${res.status})`);
+      return res.arrayBuffer();
+    }),
+  ]);
   const aggregates = computeAggregates(payload.bonds);
 
   return new ImageResponse(
@@ -52,7 +61,7 @@ export default async function OpenGraphImage() {
               fontWeight: 700,
               lineHeight: 0.9,
               letterSpacing: "-0.04em",
-              fontFamily: "Impact, Haettenschweiler, sans-serif",
+              fontFamily: "Alumni Sans",
             }}
           >
             {formatLiquidity(aggregates.totalLiquidity)}
@@ -83,6 +92,16 @@ export default async function OpenGraphImage() {
         </div>
       </div>
     ),
-    { ...size }
+    {
+      ...size,
+      fonts: [
+        {
+          name: "Alumni Sans",
+          data: alumniSans,
+          style: "normal",
+          weight: 700,
+        },
+      ],
+    }
   );
 }

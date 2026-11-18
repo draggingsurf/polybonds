@@ -117,10 +117,10 @@ export function Controls({
               onChange={(e) => onSort(e.target.value as SortKey)}
               className="h-9 border border-hairline bg-white px-2 font-mono-num text-[13px] text-ink"
             >
-              <option value="apy">APY</option>
-              <option value="return">Return</option>
-              <option value="ends">Ends</option>
               <option value="liquidity">Liquidity</option>
+              <option value="return">Return</option>
+              <option value="apy">APY</option>
+              <option value="ends">Ends</option>
             </select>
           </label>
         </div>

@@ -24,7 +24,7 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://polybonds.vercel.app"),
+  metadataBase: new URL("https://polybonds.fun"),
   title: "PolyBonds: near-certain Polymarket predictions ending this year",
   description:
     "Screen near-certain Polymarket markets priced 95¢–99.5¢ that pay out before Dec 31. See total liquidity, returns, and trade links.",

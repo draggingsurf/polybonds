@@ -40,7 +40,7 @@ function parseSort(value: string | null): SortKey {
   if (value === "return" || value === "ends" || value === "liquidity" || value === "apy") {
     return value;
   }
-  return "apy";
+  return "liquidity";
 }
 
 function parseCategory(value: string | null): CategoryFilter {
@@ -76,7 +76,7 @@ function writeUrl(pathname: string, filters: Filters) {
   if (filters.range !== "year") params.set("range", filters.range);
   if (filters.minPrice !== 0.95) params.set("min", String(filters.minPrice));
   if (filters.amount !== 1000) params.set("amt", String(filters.amount));
-  if (filters.sort !== "apy") params.set("sort", filters.sort);
+  if (filters.sort !== "liquidity") params.set("sort", filters.sort);
   if (filters.category !== "all") params.set("cat", filters.category);
   if (filters.query.trim()) params.set("q", filters.query.trim());
 

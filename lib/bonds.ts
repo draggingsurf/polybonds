@@ -573,6 +573,8 @@ export function marketToBond(
   const endDate = new Date(endRaw);
   if (Number.isNaN(endDate.getTime())) return null;
   if (endDate.getTime() <= now.getTime()) return null;
+  // Skip same-day coin-flips — need at least 24h of runway
+  if (endDate.getTime() - now.getTime() < 86_400_000) return null;
   if (endDate.getTime() > cutoff.getTime()) return null;
 
   const liquidity = Number(market.liquidityNum ?? 0);
@@ -649,8 +651,9 @@ export function filterBonds(
   return bonds.filter((b) => {
     if (b.buyPrice < minPrice || b.buyPrice > 0.995) return false;
     if (category !== "all" && b.category !== category) return false;
+    const end = new Date(b.endDate);
+    if (end.getTime() - now.getTime() < 86_400_000) return false;
     if (maxDays != null) {
-      const end = new Date(b.endDate);
       const days = computeDaysLeft(end, now);
       if (days > maxDays) return false;
     }
@@ -659,7 +662,7 @@ export function filterBonds(
   });
 }
 
-export function sortBonds(bonds: Bond[], sort: SortKey = "apy"): Bond[] {
+export function sortBonds(bonds: Bond[], sort: SortKey = "liquidity"): Bond[] {
   const copy = [...bonds];
   copy.sort((a, b) => {
     switch (sort) {
@@ -859,20 +862,24 @@ export async function fetchCategoryMap(
 let bondsCache: BondsPayload | null = null;
 
 /** Drop markets that current exclusion rules reject (also cleans old snapshots). */
-export function sanitizeBonds(bonds: Bond[]): Bond[] {
+export function sanitizeBonds(bonds: Bond[], now = new Date()): Bond[] {
   return bonds
-    .filter(
-      (b) =>
+    .filter((b) => {
+      const end = new Date(b.endDate).getTime();
+      return (
         !isExcludedBondMarket(b.question, b.slug) &&
         b.category !== undefined &&
         b.buyPrice >= 0.95 &&
-        b.buyPrice <= 0.995
-    )
+        b.buyPrice <= 0.995 &&
+        Number.isFinite(end) &&
+        end - now.getTime() >= 86_400_000
+      );
+    })
     .map((b) => ({ ...b, tradeUrl: withReferral(b.tradeUrl) }));
 }
 
-function sanitizePayload(payload: BondsPayload): BondsPayload {
-  const bonds = sanitizeBonds(payload.bonds);
+function sanitizePayload(payload: BondsPayload, now = new Date()): BondsPayload {
+  const bonds = sanitizeBonds(payload.bonds, now);
   return { ...payload, bonds };
 }
 
@@ -964,7 +971,7 @@ async function refreshBondsFromNetwork(now: Date): Promise<BondsPayload> {
 
 export async function fetchBonds(now = new Date()): Promise<BondsPayload> {
   if (bondsCache && bondsCache.bonds.length > 0 && !bondsCache.error) {
-    const cleaned = sanitizePayload(bondsCache);
+    const cleaned = sanitizePayload(bondsCache, now);
     bondsCache = cleaned;
     return cleaned;
   }
@@ -976,7 +983,7 @@ export async function fetchBonds(now = new Date()): Promise<BondsPayload> {
     void refreshBondsFromNetwork(now)
       .then(async (payload) => {
         if (payload.bonds.length > 0) {
-          const cleaned = sanitizePayload(payload);
+          const cleaned = sanitizePayload(payload, now);
           bondsCache = cleaned;
           await writeSnapshot(cleaned);
         }
@@ -987,7 +994,7 @@ export async function fetchBonds(now = new Date()): Promise<BondsPayload> {
 
   const year = now.getUTCFullYear();
   try {
-    const payload = sanitizePayload(await refreshBondsFromNetwork(now));
+    const payload = sanitizePayload(await refreshBondsFromNetwork(now), now);
     bondsCache = payload;
     await writeSnapshot(payload);
     return payload;

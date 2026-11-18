@@ -41,5 +41,5 @@ npx vercel
 - Markets are pulled via several Gamma sort orders (API offset caps at ~2100 per query) so year-end bonds aren’t missed just for lower liquidity.
 - Year-end window includes Polymarket’s Dec 31 ET close stamps (often `Jan 1 ~05:00 UTC`).
 - Sports, esports, weather, and crypto price / up-down / range markets are excluded. Category tabs: All, Politics, Crypto, Economy, Other.
-- Filters live in the URL (`?range=month&min=0.95&amt=500&sort=apy&cat=Crypto&q=fed`) so shared links keep the view.
+- Filters live in the URL (`?range=month&min=0.95&amt=500&sort=return&cat=Crypto&q=fed`) so shared links keep the view. Default sort is liquidity; markets ending within 24 hours are hidden.
 - Prices are before fees. “Ends” is when trading closes; payout follows resolution.

@@ -137,6 +137,15 @@ describe("marketToBond filters", () => {
     expect(marketToBond(market, { now, year: 2026, minPrice: 0.9 })).toBeNull();
   });
 
+  it("rejects markets ending within 24 hours", () => {
+    expect(
+      marketToBond(
+        { ...base, endDate: "2026-11-17T06:00:00Z" },
+        { now, year: 2026 }
+      )
+    ).toBeNull();
+  });
+
   it("rejects closed or non-orderbook markets", () => {
     expect(
       marketToBond({ ...base, closed: true }, { now, year: 2026 })
