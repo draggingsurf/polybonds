@@ -1,36 +1,45 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PolyBonds
 
-## Getting Started
+A one-page screener for near-certain Polymarket “bonds”: open binary markets priced between 95¢ and 99.5¢ that resolve on or before Dec 31 (UTC) of the current year.
 
-First, run the development server:
+Data comes from Polymarket’s public [Gamma API](https://gamma-api.polymarket.com). No database, login, or API keys.
+
+## Run locally
 
 ```bash
+npm i
+npm run snapshot   # pulls Polymarket into data/bonds.json (needs network)
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The UI reads `data/bonds.json` first (static snapshot). If Gamma is reachable it refreshes that file; if not, the snapshot still loads.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Tests
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm test
+```
 
 ## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. Push this repo to GitHub (or connect the folder in the Vercel dashboard).
+2. Import the project in [Vercel](https://vercel.com/new).
+3. Use the defaults (Next.js). No environment variables are required.
+4. Deploy. The `/api/bonds` route and Open Graph image revalidate every 5 minutes.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Or from the CLI:
+
+```bash
+npx vercel
+```
+
+## Notes
+
+- The site is **static**: Polymarket data is snapshotted at build time. Rebuild (`npm run build` / redeploy) to refresh.
+- Markets are pulled via several Gamma sort orders (API offset caps at ~2100 per query) so year-end bonds aren’t missed just for lower liquidity.
+- Year-end window includes Polymarket’s Dec 31 ET close stamps (often `Jan 1 ~05:00 UTC`).
+- Sports, esports, weather, and crypto price / up-down / range markets are excluded. Category tabs: All, Politics, Crypto, Economy, Other.
+- Filters live in the URL (`?range=month&min=0.95&amt=500&sort=apy&cat=Crypto&q=fed`) so shared links keep the view.
+- Prices are before fees. “Ends” is when trading closes; payout follows resolution.
